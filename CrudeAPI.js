@@ -4,6 +4,11 @@ const app = express();
 // Middleware to parse incoming JSON request bodies
 app.use(express.json());
 
+// Stage 5: Swagger UI setup to serve interactive API documentation
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./openapi.json");
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Stage 2: Mock in-memory database of tasks
 let tasks = [
     { id: 1, title: "Learn backend basics", done: true },
