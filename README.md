@@ -74,4 +74,29 @@ Here is the step-by-step verification of the CRUD lifecycle:
 7. **GET `/tasks`** (Verifying task is deleted and we are back to the original 3 tasks):
    ![List after Deletion](screenshots/7-get-after-delete.png)
 
+---
+
+## 🗄️ Database Integration (Week 3)
+
+This project has been upgraded to persist data using a real SQLite database.
+
+### Why SQLite was chosen:
+1. **Zero Configuration**: SQLite requires no external server setup, no usernames, and no passwords. It runs completely self-contained.
+2. **Single-File Storage**: The entire database is stored as a single file (`tasks.db`) on your disk, making it extremely lightweight and portable.
+3. **Automatic Creation**: If the database file is missing on startup, Node.js automatically creates the file, structures the tables, and seeds the initial data.
+
+### Where the database is stored:
+The database file lives in the root directory as **`tasks.db`**. It is included in `.gitignore` so that every new developer starts with a fresh database setup.
+
+### Example SQL query executed:
+To filter and view only completed tasks, we can run this query inside our SQLite database:
+```sql
+SELECT * FROM tasks WHERE done = 1;
+```
+
+### Database Viewer Screenshot:
+Below is a screenshot showing the database open inside the **DB Browser for SQLite** viewer:
+
+![DB Browser Screenshot](screenshots/db-browser.png)
+
 

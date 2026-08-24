@@ -1,3 +1,6 @@
 node_modules/
 npm-debug.log
 .DS_Store
+tasks.db
+W2 - Build your first CRUD API.pdf
+W3 - Connecting your CRUD to the database.pdf
