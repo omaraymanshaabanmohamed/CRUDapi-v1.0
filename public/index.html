@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task CRUD API Console</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0b0c;
+            --card-bg: rgba(20, 20, 22, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --btn-bg: #1c1c1e;
+            --btn-hover-bg: #2c2c2e;
+            --btn-border: rgba(255, 255, 255, 0.15);
+            --btn-hover-glow: rgba(255, 255, 255, 0.05);
+            --status-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 30%, #1e1e24 0%, var(--bg-color) 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle grid background pattern for engineering context */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            z-index: 2;
+            width: 100%;
+            max-width: 550px;
+            padding: 2.5rem;
+            text-align: center;
+            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #3a3a3c 0%, #1c1c1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: #e5e7eb;
+        }
+
+        .api-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background: linear-gradient(to right, #ffffff 40%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            font-weight: 300;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Glassmorphic info card */
+        .status-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .status-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+
+        .status-value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--status-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--status-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        /* Test button styles */
+        .btn-test {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background-color: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 1.1rem 2.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover glow effect */
+        .btn-test::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-test:hover {
+            background-color: var(--btn-hover-bg);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
+                        0 0 15px var(--btn-hover-glow);
+        }
+
+        .btn-test:hover::after {
+            opacity: 1;
+        }
+
+        .btn-test:active {
+            transform: translateY(1px);
+        }
+
+        .btn-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-test:hover .btn-icon {
+            transform: translateX(4px);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.15);
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="logo-container">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+            </div>
+            <div style="text-align: left;">
+                <span class="api-badge">FlyRank Internship</span>
+            </div>
+        </div>
+
+        <h1>Task Manager Console</h1>
+        <p class="subtitle">A robust, layered RESTful CRUD API powered by Node.js, Express, and a dynamic repository store. Fully integrated with interactive API specifications.</p>
+
+        <div class="status-card">
+            <div class="status-item">
+                <span class="status-label">API Status</span>
+                <span class="status-value">
+                    <span class="dot"></span> Online
+                </span>
+            </div>
+            <div style="width: 1px; height: 30px; background-color: var(--card-border);"></div>
+            <div class="status-item">
+                <span class="status-label">Version</span>
+                <span class="status-value" style="color: #e5e7eb; font-family: monospace;">v1.0.0</span>
+            </div>
+            <div style="width: 1px; height: 30px; background-color: var(--card-border);"></div>
+            <div class="status-item">
+                <span class="status-label">Environment</span>
+                <span class="status-value" style="color: #e5e7eb;">Development</span>
+            </div>
+        </div>
+
+        <a href="/docs" class="btn-test">
+            Test Crude API
+            <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </a>
+
+    </div>
+
+    <footer>
+        CRUD API Console • Built with Express & Layered Repositories
+    </footer>
+
+</body>
+</html>
