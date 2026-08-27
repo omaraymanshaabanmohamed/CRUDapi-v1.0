@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const app = express();
@@ -10,9 +11,19 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./openapi.json");
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Stage 0 & 3: Load repository layer
-const SqliteTaskRepository = require("./repositories/SqliteTaskRepository");
-const taskRepo = new SqliteTaskRepository();
+// Stage 0 & 3: Load repository layer dynamically based on environment
+const dbType = (process.env.DB_TYPE || "sqlite").toLowerCase();
+let taskRepo;
+
+if (dbType === "postgres") {
+    const PostgresTaskRepository = require("./repositories/PostgresTaskRepository");
+    taskRepo = new PostgresTaskRepository();
+    console.log("Using PostgreSQL Repository");
+} else {
+    const SqliteTaskRepository = require("./repositories/SqliteTaskRepository");
+    taskRepo = new SqliteTaskRepository();
+    console.log("Using SQLite Repository");
+}
 
 
 // Stage 1: Root route returning landing page HTML
@@ -20,9 +31,12 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Stage 1: Health check route
+// Stage 1: Health check route (exposing active database type for dynamic display)
 app.get("/health", (req, res) => {
-    res.json({ status: "ok" });
+    res.json({ 
+        status: "ok", 
+        database: dbType === "postgres" ? "PostgreSQL" : "SQLite" 
+    });
 });
 
 // Stage 1: GET /tasks - Return all tasks from the repository
@@ -96,7 +110,8 @@ app.delete("/tasks/:id", async (req, res) => {
     res.status(204).send();
 });
 
-// Stage 0 requested port 3000
-app.listen(3000, () => {
-    console.log("Server is running on http://localhost:3000");
+// Stage 0 requested port 3000 (dynamically read from PORT environment variable)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -5,3 +5,5 @@ tasks.db
 W2 - Build your first CRUD API.pdf
 W3 - Connecting your CRUD to the database.pdf
 W3 - Containerize your stack.pdf
+.env
+server.log

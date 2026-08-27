@@ -291,8 +291,8 @@
             </div>
             <div style="width: 1px; height: 30px; background-color: var(--card-border);"></div>
             <div class="status-item">
-                <span class="status-label">Version</span>
-                <span class="status-value" style="color: #e5e7eb; font-family: monospace;">v1.0.0</span>
+                <span class="status-label">Database</span>
+                <span class="status-value" id="active-db" style="color: #e5e7eb;">SQLite</span>
             </div>
             <div style="width: 1px; height: 30px; background-color: var(--card-border);"></div>
             <div class="status-item">
@@ -315,5 +315,18 @@
         CRUD API Console • Built with Express & Layered Repositories
     </footer>
 
+    <script>
+        // Fetch active database type from health endpoint dynamically
+        fetch('/health')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.database) {
+                    document.getElementById('active-db').textContent = data.database;
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load active database status:', err);
+            });
+    </script>
 </body>
 </html>
